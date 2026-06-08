@@ -26,4 +26,4 @@ dev = ["pytest>=8.0"]
 cold-start-prompt = "llm_prompt_cold_start.cli:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+include = ["llm_prompt_cold_start*"]

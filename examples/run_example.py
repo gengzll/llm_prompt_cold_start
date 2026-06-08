@@ -7,9 +7,14 @@ No API key required: this forces offline (deterministic) synthesis.
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
-from llm_prompt_cold_start import ColdStartPipeline, Settings
+# Allow running directly (python examples/run_example.py) without installing:
+# put the repo root on sys.path so the package imports.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from llm_prompt_cold_start import ColdStartPipeline, Settings  # noqa: E402
 
 HERE = Path(__file__).parent
 

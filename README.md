@@ -52,14 +52,20 @@ Key design choices:
 
 ## Install
 
+No packaging/build step needed. Just clone and install the dependencies, then run the
+CLI directly from the folder:
+
 ```bash
-pip install -e .            # core: pymupdf, openai, python-dotenv
-pip install -e ".[docx]"    # + .docx input
-pip install -e ".[dev]"     # + pytest
+git clone https://github.com/gengzll/llm_prompt_cold_start.git
+cd llm_prompt_cold_start
+pip install -r requirements.txt
 ```
 
 The **offline path needs none of these** — pure standard library (PDF input still needs
 `pymupdf`).
+
+> Prefer an installed console command? `pip install -e .` is still supported and gives you
+> the `cold-start-prompt` entry point — but it is optional.
 
 ## Configure
 
@@ -70,20 +76,30 @@ cp .env.example .env
 
 ## Use
 
-### CLI
+### CLI (run directly, no install)
+
+From the project folder, use either the launcher script or the module form:
 
 ```bash
 # Offline, no API key — grounded deterministic prompt
-cold-start-prompt ./examples/sample_docs --offline -o prompt.md
+python cold_start.py ./examples/sample_docs --offline -o prompt.md
+
+# Equivalent module form
+python -m llm_prompt_cold_start.cli ./examples/sample_docs --offline -o prompt.md
 
 # Online synthesis with sample questions + domain notes, also dump artifacts
-cold-start-prompt ./docs \
+python cold_start.py ./docs \
     --questions questions.txt \
     --domain-knowledge domain.txt \
     -o prompt.md --json result.json
 ```
 
+(If you did `pip install -e .`, the same thing is available as `cold-start-prompt ...`.)
+
 ### Python
+
+Run your script from the project folder (so `llm_prompt_cold_start/` is importable), or
+add the project root to `sys.path` — see `examples/run_example.py`.
 
 ```python
 from llm_prompt_cold_start import generate_system_prompt
@@ -110,7 +126,7 @@ print(result.confidence, [qt.name for qt in result.query_types])
 ### Try it now
 
 ```bash
-PYTHONPATH=src python examples/run_example.py     # offline, uses bundled sample docs
+python examples/run_example.py     # offline, uses bundled sample docs
 ```
 
 ## Output shape
@@ -138,5 +154,5 @@ This is a clean first version. Deliberately minimal. Natural next steps:
 ## Tests
 
 ```bash
-PYTHONPATH=src python -m pytest tests/ -q
+python -m pytest tests/ -q
 ```

@@ -1,0 +1,10 @@
+# Core runtime dependencies. Install with:  pip install -r requirements.txt
+# (No packaging/build needed — run the CLI directly from this folder.)
+pymupdf>=1.24        # PDF parsing (only needed for .pdf inputs)
+openai>=1.30         # LLM client, OpenAI-compatible (only needed for online synthesis)
+python-dotenv>=1.0   # load .env (optional convenience)
+
+# Optional extras (uncomment if you need them):
+# python-docx>=1.1   # .docx input support
+# yake>=0.4.8        # stronger keyphrase extraction
+# pytest>=8.0        # run the test suite

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-prompt-cold-start"
+version = "0.1.0"
+description = "Generate a baseline system prompt for document-grounded LLM/RAG apps directly from a corpus (cold start)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    # Kept intentionally small. The offline path uses ZERO of these.
+    "pymupdf>=1.24",        # PDF parsing (lazy-imported; only needed for .pdf inputs)
+    "openai>=1.30",         # LLM client, OpenAI-compatible (lazy-imported; only for online synthesis)
+    "python-dotenv>=1.0",   # load .env (optional convenience)
+]
+
+[project.optional-dependencies]
+# Optional upgrades. The core works without them.
+keyphrase = ["yake>=0.4.8"]       # better keyphrase extraction than the built-in TF-IDF
+docx = ["python-docx>=1.1"]       # .docx input support
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+cold-start-prompt = "llm_prompt_cold_start.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

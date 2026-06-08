@@ -14,7 +14,6 @@ Key concepts:
 - policy
 - sustainability
 - whistleblower
-- audit
 - data protection
 
 Entity types you will encounter:
@@ -32,11 +31,12 @@ Metrics / quantities in this corpus:
 - days
 
 Sections likely to contain answers:
+- GreenCo Sustainability Report 2023
 - Climate Targets and Emissions
 - Governance
 - Risk and Compliance
 - Sustainable Finance
-- GreenCo Code of Conduct and Compliance Policy
+- GreenCo Code of Conduct and Compliance Policy 2023
 - Purpose
 - Anti-Bribery and Corruption
 - Whistleblower Protection
@@ -62,38 +62,38 @@ Identify the question's type, then follow the matching guidance:
 
 ## emissions_reduction_target
 Query about specific emissions reduction targets of a company.
-- Must cover: emissions; year; target
-- How to answer: Identify the specific year and the corresponding emissions reduction target.
-- Retrieval focus: Search for the company's sustainability reports or official statements.
-- Watch out for: Ensure the target is for the correct year and aligns with the company's sustainability goals.
+- Must cover: emissions; target_date; percentage_reduction
+- How to answer: Identify the specific target date and the percentage reduction goal.
+- Retrieval focus: Locate the section on climate emissions targets and extract the relevant information.
+- Watch out for: Ensure the target is for the correct fiscal year and aligns with the company's sustainability goals.
 
 ## emissions_comparison
 Query for comparing emissions over different years.
 - Must cover: emissions; year; scope
-- How to answer: Compare the specified scope of emissions between the two years.
-- Retrieval focus: Locate the company's emissions data in financial reports or sustainability sections.
-- Watch out for: Verify the accuracy of the data and the consistency of the scope definition.
+- How to answer: Compare the emissions figures for the specified years and scopes.
+- Retrieval focus: Search for the climate emissions data in the relevant sections and identify the years to compare.
+- Watch out for: Be aware of changes in reporting standards or methodologies that might affect the comparability of data.
 
-## committee_membership
-Query about the membership of a specific committee.
-- Must cover: committee; membership
-- How to answer: Identify the members of the specified committee.
-- Retrieval focus: Search for the committee's composition in governance documents or annual reports.
-- Watch out for: Check for the most recent information on committee membership.
+## governance_structure
+Query about the structure or composition of a company's governance bodies.
+- Must cover: governance_body; membership; chairperson
+- How to answer: Identify the governance body in question and provide details about its composition and leadership.
+- Retrieval focus: Review the governance section or relevant documents to find information on the governance structure.
+- Watch out for: Check for recent changes in the governance structure that might affect the current composition.
 
-## whistleblower_policy
-Query about the details of the company's whistleblower policy.
-- Must cover: policy; procedure; protection
-- How to answer: Describe the procedures and protections provided under the whistleblower policy.
-- Retrieval focus: Review the company's code of conduct or compliance policy.
-- Watch out for: Ensure the policy is up-to-date and in compliance with legal requirements.
+## policy_procedure
+Query about the procedures or policies of a company, particularly concerning sensitive issues.
+- Must cover: policy; procedure; application
+- How to answer: Explain how the policy or procedure is applied in practice.
+- Retrieval focus: Search for the specific policy or procedure in the company's code of conduct or compliance policy.
+- Watch out for: Be cautious about interpreting policies without full context.
 
-## gift_declaration
-Query about the gift declaration policy and deadlines.
-- Must cover: policy; gifts; deadline
-- How to answer: Specify the types of gifts that must be declared and the time frame for doing so.
-- Retrieval focus: Consult the company's compliance policy or code of conduct.
-- Watch out for: Verify the policy's alignment with legal and ethical standards.
+## compliance_gift_declaration
+Query about compliance-related gift declarations and deadlines.
+- Must cover: gift; compliance_officer; deadline
+- How to answer: Detail the types of gifts that must be declared and the time frame for doing so.
+- Retrieval focus: Locate the compliance and ethics section for information on gift declarations.
+- Watch out for: Ensure the information is current and applicable to the specific compliance policy in question.
 
 ## insufficient_evidence
 Questions the corpus cannot answer or only partially supports.

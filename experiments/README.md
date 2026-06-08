@@ -44,12 +44,20 @@ See [`summary.md`](summary.md) for the table. Qualitative findings:
 reverse-verification matches cleaned concepts against the corpus by token overlap
 (bug fix #1).
 
-**Confidence now discriminates between scaffolds.** It used to return the same value
-for every group (it was dominated by corpus-level constants and a binary coverage term
-that was tautological offline). It now combines graded grounding strength, concept
-cleanliness, corpus size, and section structure — so the cleanest scaffold
-(`online_with_inputs`, 0.78) scores above the noisy ones, and `online_no_inputs` (0.69)
-is correctly flagged when its pack falls back to noisy keyphrase concepts.
+**Confidence now ranks the scaffolds the way you'd expect.** It used to return the same
+value (~0.71) for every group: two of its three terms were corpus constants and the third
+(binary coverage) was tautological offline. It is now six signals — graded grounding,
+concept cleanliness, **synthesis provenance** (fraction of pack fields the LLM actually
+produced vs. silent fallback), **query-type specificity** (corpus-specific vs. generic
+catalog templates), corpus size, and section structure. Result on this corpus:
+
+- online (0.83–0.89) clearly outranks offline (0.46), because the deterministic path
+  scores 0 on both synthesis provenance and query-type specificity;
+- a silent fallback (the LLM omitting `key_concepts`) now lowers `synthesis` instead of
+  passing noisy keyphrases off as if they were clean LLM output.
+
+The `synthesis` signal encodes a prior (LLM synthesis is more trustworthy here); the
+others are observable quality measures.
 
 > Note: online output varies slightly run to run (temperature 0.2), so query-type
 > names may differ if you re-run.

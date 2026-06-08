@@ -80,6 +80,9 @@ class DomainPack:
     answer_policy: AnswerPolicy = field(default_factory=AnswerPolicy)
     # concept -> number of documents/occurrences supporting it (reverse-verified)
     evidence: dict[str, int] = field(default_factory=dict)
+    # field name -> "llm" | "fallback": which fields the LLM actually produced
+    # vs. which silently fell back to the deterministic heuristic.
+    provenance: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass

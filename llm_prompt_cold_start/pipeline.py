@@ -53,9 +53,12 @@ class ColdStartPipeline:
         query_types = infer_query_types(pack, questions, llm=self.llm)
 
         # 5) verify + score
-        confidence = compute_confidence(pack, profile)
+        confidence = compute_confidence(pack, profile, query_types)
         if confidence < 0.5:
-            notes.append("Low confidence: corpus is small or weakly grounded; review the prompt before use.")
+            notes.append(
+                "Low confidence: small corpus, weak grounding, or deterministic "
+                "(offline) synthesis; review the prompt before use."
+            )
 
         # 6) build the system prompt
         system_prompt = build_system_prompt(pack, query_types)

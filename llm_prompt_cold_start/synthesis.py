@@ -4,6 +4,19 @@ import json
 
 from .schemas import AnswerPolicy, CorpusProfile, DomainPack, QueryType
 
+# The DomainPack content fields that are synthesized (LLM or fallback), used for
+# provenance tracking and the synthesis-completeness confidence signal.
+_PACK_FIELDS = [
+    "business_context",
+    "high_level_topics",
+    "key_concepts",
+    "entity_types",
+    "metrics",
+    "document_sections",
+    "reasoning_patterns",
+    "risk_policies",
+]
+
 # --------------------------------------------------------------------------- #
 # Domain pack synthesis
 # --------------------------------------------------------------------------- #
@@ -42,6 +55,7 @@ def synthesize_domain_pack(
     corpus-grounded fallback. Either way, evidence counts are attached and the
     result is verified against the corpus."""
     base = _deterministic_domain_pack(profile, user_domain_knowledge)
+    base.provenance = {f: "fallback" for f in _PACK_FIELDS}
     if llm is None:
         return _attach_evidence(base, profile)
 
@@ -55,20 +69,26 @@ def synthesize_domain_pack(
     try:
         data = llm.complete_json(_DOMAIN_SYSTEM, user_msg)
     except Exception:
-        return _attach_evidence(base, profile)
+        return _attach_evidence(base, profile)  # provenance already all-fallback
 
-    # Merge LLM output over the deterministic base, backfilling empties.
-    merged = DomainPack(
-        business_context=_pick(data.get("business_context"), base.business_context),
-        high_level_topics=_pick(data.get("high_level_topics"), base.high_level_topics),
-        key_concepts=_pick(data.get("key_concepts"), base.key_concepts),
-        entity_types=_pick(data.get("entity_types"), base.entity_types),
-        metrics=_pick(data.get("metrics"), base.metrics),
-        document_sections=_pick(data.get("document_sections"), base.document_sections),
-        reasoning_patterns=_pick(data.get("reasoning_patterns"), base.reasoning_patterns),
-        risk_policies=_pick(data.get("risk_policies"), base.risk_policies),
-        answer_policy=base.answer_policy,
-    )
+    # Merge LLM output over the deterministic base, recording, per field, whether
+    # the value came from the LLM or silently fell back to the heuristic. The
+    # fallback is no longer invisible: it shows up as lower synthesis provenance.
+    base_values = {
+        "business_context": base.business_context,
+        "high_level_topics": base.high_level_topics,
+        "key_concepts": base.key_concepts,
+        "entity_types": base.entity_types,
+        "metrics": base.metrics,
+        "document_sections": base.document_sections,
+        "reasoning_patterns": base.reasoning_patterns,
+        "risk_policies": base.risk_policies,
+    }
+    merged = DomainPack(answer_policy=base.answer_policy)
+    for fname in _PACK_FIELDS:
+        value, source = _pick_with_source(data.get(fname), base_values[fname])
+        setattr(merged, fname, value)
+        merged.provenance[fname] = source
     return _attach_evidence(merged, profile)
 
 
@@ -313,20 +333,33 @@ def _concept_support(concept: str, keyphrases: list[tuple[str, int]]) -> int:
     return best
 
 
-def compute_confidence(pack: DomainPack, profile: CorpusProfile) -> float:
+def compute_confidence(
+    pack: DomainPack,
+    profile: CorpusProfile,
+    query_types: list[QueryType] | None = None,
+) -> float:
     """Coarse 0-1 confidence that the generated scaffold is reliable.
 
-    Four signals (weights sum to 1.0):
-    - grounding   (0.35): how strongly the key concepts are attested in the corpus,
-                          graded by support count rather than mere present/absent.
-                          (Binary coverage was tautological for the offline path,
-                          where concepts ARE the keyphrases, so it was always 1.0.)
-    - cleanliness (0.30): fraction of key concepts that look like real domain terms
-                          rather than tokenizer noise ("usd", "tco", bare numbers).
-                          This is what separates a clean LLM scaffold from a noisy
-                          deterministic one on the same corpus.
-    - corpus_size (0.15): more documents / more text -> more reliable.
-    - sections    (0.20): presence of parsed section structure.
+    Six signals (weights sum to 1.0). The last two are what let a genuine LLM
+    scaffold rank above the deterministic one: they reward richer synthesis and
+    corpus-specific query types, instead of rewarding verbatim corpus echoing
+    (which the offline heuristic does trivially well).
+
+    - grounding   (0.25): how strongly key concepts are attested in the corpus,
+                          graded by support count (not present/absent).
+    - cleanliness (0.20): fraction of key concepts that look like real domain
+                          terms rather than tokenizer noise ("usd", "tco").
+    - synthesis   (0.20): fraction of pack fields actually produced by the LLM
+                          rather than fallen back to the heuristic. 0 for offline;
+                          a silent fallback (LLM omitting a field) lowers it.
+    - specificity (0.20): fraction of query types that are corpus-specific rather
+                          than generic catalog templates. 0 for offline.
+    - corpus_size (0.05): more documents / more text -> more reliable.
+    - sections    (0.10): presence of parsed section structure.
+
+    Note: `synthesis` encodes the prior that LLM synthesis is more trustworthy
+    than the deterministic fallback for this task; the other signals are
+    observable quality measures.
     """
     if profile.n_documents == 0:
         return 0.0
@@ -336,10 +369,39 @@ def compute_confidence(pack: DomainPack, profile: CorpusProfile) -> float:
     strong = max(1, min(3, profile.n_documents))
     grounding = _grounding_score(concepts, pack.evidence, strong=strong)
     cleanliness = _cleanliness_score(concepts)
+    synthesis = _synthesis_score(pack)
+    specificity = _query_type_specificity(query_types or [])
     corpus_size = min(1.0, profile.n_documents / 5) * min(1.0, profile.n_chars / 20000)
     section_signal = 1.0 if profile.section_titles else 0.5
-    score = 0.35 * grounding + 0.30 * cleanliness + 0.15 * corpus_size + 0.20 * section_signal
+    score = (
+        0.25 * grounding
+        + 0.20 * cleanliness
+        + 0.20 * synthesis
+        + 0.20 * specificity
+        + 0.05 * corpus_size
+        + 0.10 * section_signal
+    )
     return round(score, 2)
+
+
+def _synthesis_score(pack: DomainPack) -> float:
+    """Fraction of pack fields actually produced by the LLM (vs deterministic
+    fallback). 0.0 when there is no provenance (pure offline)."""
+    if not pack.provenance:
+        return 0.0
+    llm = sum(1 for f in _PACK_FIELDS if pack.provenance.get(f) == "llm")
+    return llm / len(_PACK_FIELDS)
+
+
+def _query_type_specificity(query_types: list[QueryType]) -> float:
+    """Fraction of query types that are corpus-specific rather than generic catalog
+    templates. The always-present `insufficient_evidence` guard is ignored."""
+    generic = set(_default_query_catalog().keys())
+    scored = [qt for qt in query_types if qt.name != "insufficient_evidence"]
+    if not scored:
+        return 0.0
+    specific = sum(1 for qt in scored if qt.name not in generic)
+    return specific / len(scored)
 
 
 def _grounding_score(concepts: list[str], evidence: dict[str, int], strong: int = 3) -> float:
@@ -394,6 +456,15 @@ def _as_list(value) -> list[str]:
 def _pick(primary, fallback) -> list[str]:
     cleaned = _as_list(primary)
     return cleaned or fallback
+
+
+def _pick_with_source(primary, fallback) -> tuple[list[str], str]:
+    """Like ``_pick`` but also report whether the value came from the LLM
+    (``"llm"``) or fell back to the deterministic heuristic (``"fallback"``)."""
+    cleaned = _as_list(primary)
+    if cleaned:
+        return cleaned, "llm"
+    return fallback, "fallback"
 
 
 def _dedupe(items: list[str]) -> list[str]:

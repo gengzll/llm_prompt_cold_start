@@ -79,6 +79,44 @@ def test_confidence_discriminates_clean_vs_noisy():
     assert _grounding_score(["x"], {"x": 1}, strong=3) < _grounding_score(["x"], {"x": 3}, strong=3)
 
 
+def test_synthesis_and_specificity_signals():
+    from llm_prompt_cold_start.synthesis import (
+        _PACK_FIELDS,
+        _query_type_specificity,
+        _synthesis_score,
+    )
+    from llm_prompt_cold_start.schemas import DomainPack, QueryType
+
+    assert _synthesis_score(DomainPack()) == 0.0  # offline: no provenance
+    assert _synthesis_score(DomainPack(provenance={f: "llm" for f in _PACK_FIELDS})) == 1.0
+    one_fallback = {f: "llm" for f in _PACK_FIELDS} | {"key_concepts": "fallback"}
+    assert _synthesis_score(DomainPack(provenance=one_fallback)) < 1.0
+
+    # generic catalog names score 0; corpus-specific names score 1 (guard ignored)
+    assert _query_type_specificity([QueryType("fact_extraction"), QueryType("insufficient_evidence")]) == 0.0
+    assert _query_type_specificity([QueryType("emissions_target"), QueryType("insufficient_evidence")]) == 1.0
+
+
+def test_confidence_ranks_synthesized_above_deterministic():
+    # the design goal: a genuine LLM scaffold outranks the deterministic one.
+    from llm_prompt_cold_start.schemas import CorpusProfile, DomainPack, QueryType
+    from llm_prompt_cold_start.synthesis import _PACK_FIELDS, _attach_evidence, compute_confidence
+
+    profile = CorpusProfile(
+        n_documents=2, n_chars=2000,
+        keyphrases=[("committee", 2), ("emissions", 2)],
+        section_titles=[("Governance", 2)],
+    )
+    concepts = ["climate targets", "emissions reduction"]
+    offline = DomainPack(key_concepts=concepts, provenance={f: "fallback" for f in _PACK_FIELDS})
+    online = DomainPack(key_concepts=concepts, provenance={f: "llm" for f in _PACK_FIELDS})
+    _attach_evidence(offline, profile)
+    _attach_evidence(online, profile)
+    off = compute_confidence(offline, profile, [QueryType("fact_extraction")])
+    on = compute_confidence(online, profile, [QueryType("emissions_reduction_target")])
+    assert on > off
+
+
 def test_example_input_files_exist():
     assert (EXAMPLES / "questions.txt").exists()
     assert (EXAMPLES / "domain_knowledge.txt").exists()

@@ -81,20 +81,26 @@ cp .env.example .env
 From the project folder, use either the launcher script or the module form:
 
 ```bash
-# Offline, no API key — grounded deterministic prompt
+# 1) Simplest: just point at documents (offline, no API key)
 python cold_start.py ./examples/sample_docs --offline -o prompt.md
 
-# Equivalent module form
-python -m llm_prompt_cold_start.cli ./examples/sample_docs --offline -o prompt.md
+# 2) Demo with sample questions + domain knowledge (runnable as-is, offline)
+python cold_start.py ./examples/sample_docs \
+    --questions examples/questions.txt \
+    --domain-knowledge examples/domain_knowledge.txt \
+    --offline -o prompt.md --json result.json
 
-# Online synthesis with sample questions + domain notes, also dump artifacts
+# 3) Online synthesis (uses your OPENAI_API_KEY): drop --offline
 python cold_start.py ./docs \
-    --questions questions.txt \
-    --domain-knowledge domain.txt \
+    --questions examples/questions.txt \
+    --domain-knowledge examples/domain_knowledge.txt \
     -o prompt.md --json result.json
 ```
 
-(If you did `pip install -e .`, the same thing is available as `cold-start-prompt ...`.)
+Both `--questions` and `--domain-knowledge` take a plain text file with **one item per
+line**; both are optional. The equivalent module form is
+`python -m llm_prompt_cold_start.cli ...`, and after `pip install -e .` it is
+`cold-start-prompt ...`.
 
 ### Python
 
@@ -126,8 +132,18 @@ print(result.confidence, [qt.name for qt in result.query_types])
 ### Try it now
 
 ```bash
-python examples/run_example.py     # offline, uses bundled sample docs
+# Python demo (questions + domain knowledge passed inline), offline
+python examples/run_example.py
+
+# CLI demo (questions + domain knowledge read from files), offline
+python cold_start.py ./examples/sample_docs \
+    --questions examples/questions.txt \
+    --domain-knowledge examples/domain_knowledge.txt \
+    --offline -o prompt.md
 ```
+
+Bundled example inputs: [`examples/questions.txt`](examples/questions.txt) and
+[`examples/domain_knowledge.txt`](examples/domain_knowledge.txt).
 
 ## Output shape
 

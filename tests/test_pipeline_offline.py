@@ -4,9 +4,11 @@ from pathlib import Path
 
 from llm_prompt_cold_start import ColdStartPipeline, Settings
 from llm_prompt_cold_start.analysis import build_corpus_profile
+from llm_prompt_cold_start.cli import main as cli_main
 from llm_prompt_cold_start.parsing import load_documents
 
-SAMPLES = Path(__file__).resolve().parents[1] / "examples" / "sample_docs"
+EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
+SAMPLES = EXAMPLES / "sample_docs"
 
 
 def _offline_pipeline() -> ColdStartPipeline:
@@ -55,3 +57,26 @@ def test_works_without_questions_or_domain_knowledge():
     result = _offline_pipeline().run([SAMPLES])
     assert result.system_prompt
     assert result.query_types  # inferred from the corpus alone
+
+
+def test_example_input_files_exist():
+    assert (EXAMPLES / "questions.txt").exists()
+    assert (EXAMPLES / "domain_knowledge.txt").exists()
+
+
+def test_cli_demo_with_questions_and_domain_knowledge(tmp_path):
+    out = tmp_path / "prompt.md"
+    rc = cli_main(
+        [
+            str(SAMPLES),
+            "--questions", str(EXAMPLES / "questions.txt"),
+            "--domain-knowledge", str(EXAMPLES / "domain_knowledge.txt"),
+            "--offline",
+            "-o", str(out),
+        ]
+    )
+    assert rc == 0
+    text = out.read_text(encoding="utf-8")
+    assert "# ROLE" in text and "# QUERY-TYPE PLAYBOOK" in text
+    # a domain-knowledge line should be layered into the prompt context
+    assert "sustainable finance" in text.lower()

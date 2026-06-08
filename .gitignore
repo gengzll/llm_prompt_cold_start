@@ -8,3 +8,9 @@ venv/
 .env
 .pytest_cache/
 .DS_Store
+
+# generated demo / run outputs
+prompt.md
+prompt_demo.md
+result.json
+result_demo.json

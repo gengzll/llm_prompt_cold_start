@@ -1,0 +1,77 @@
+[
+  {
+    "group": "offline_no_inputs",
+    "mode": "offline",
+    "model": "-",
+    "questions": false,
+    "domain_knowledge": false,
+    "confidence": 0.71,
+    "n_query_types": 6,
+    "query_types": [
+      "fact_extraction",
+      "comparison",
+      "policy_interpretation",
+      "summary",
+      "evidence_lookup",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 4445,
+    "prompt_file": "results/offline_no_inputs.md"
+  },
+  {
+    "group": "offline_with_inputs",
+    "mode": "offline",
+    "model": "-",
+    "questions": true,
+    "domain_knowledge": true,
+    "confidence": 0.71,
+    "n_query_types": 5,
+    "query_types": [
+      "fact_extraction",
+      "comparison",
+      "evidence_lookup",
+      "policy_interpretation",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 4418,
+    "prompt_file": "results/offline_with_inputs.md"
+  },
+  {
+    "group": "online_no_inputs",
+    "mode": "online",
+    "model": "glm-4-flash",
+    "questions": false,
+    "domain_knowledge": false,
+    "confidence": 0.71,
+    "n_query_types": 6,
+    "query_types": [
+      "esg_report_analysis",
+      "governance_structure",
+      "climate_emission_reduction",
+      "compliance_issues",
+      "data_protection_measures",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 4954,
+    "prompt_file": "results/online_no_inputs.md"
+  },
+  {
+    "group": "online_with_inputs",
+    "mode": "online",
+    "model": "glm-4-flash",
+    "questions": true,
+    "domain_knowledge": true,
+    "confidence": 0.71,
+    "n_query_types": 6,
+    "query_types": [
+      "emissions_reduction_target",
+      "emissions_comparison",
+      "committee_membership",
+      "whistleblower_policy",
+      "gift_declaration",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 4017,
+    "prompt_file": "results/online_with_inputs.md"
+  }
+]

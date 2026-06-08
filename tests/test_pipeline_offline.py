@@ -59,6 +59,16 @@ def test_works_without_questions_or_domain_knowledge():
     assert result.query_types  # inferred from the corpus alone
 
 
+def test_concept_support_matches_paraphrased_concepts():
+    # bug fix #1: cleaned/paraphrased concepts should still find corpus support
+    from llm_prompt_cold_start.synthesis import _concept_support
+
+    keyphrases = [("committee", 4), ("emissions", 7), ("greenco", 5)]
+    assert _concept_support("Sustainability Committee", keyphrases) == 4
+    assert _concept_support("emissions reduction", keyphrases) == 7
+    assert _concept_support("unrelated term", keyphrases) == 0
+
+
 def test_example_input_files_exist():
     assert (EXAMPLES / "questions.txt").exists()
     assert (EXAMPLES / "domain_knowledge.txt").exists()

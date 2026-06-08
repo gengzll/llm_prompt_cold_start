@@ -180,7 +180,13 @@ def infer_query_types(
                 risk_flags=_as_list(item.get("risk_flags")),
             )
         )
-    return out or base
+    if not out:
+        return base
+    # Always keep the unanswerable/insufficient-evidence guard, like the
+    # deterministic path does, even if the model didn't produce one.
+    if not any(qt.name == "insufficient_evidence" for qt in out):
+        out.append(_default_query_catalog()["insufficient_evidence"])
+    return out
 
 
 def _deterministic_query_types(domain_pack: DomainPack, questions: list[str]) -> list[QueryType]:
@@ -281,12 +287,30 @@ def _default_query_catalog() -> dict[str, QueryType]:
 # Reverse verification: count corpus support for each pack concept.
 # --------------------------------------------------------------------------- #
 def _attach_evidence(pack: DomainPack, profile: CorpusProfile) -> DomainPack:
-    freq = {p.lower(): c for p, c in profile.keyphrases}
     evidence: dict[str, int] = {}
     for concept in pack.key_concepts + pack.high_level_topics:
-        evidence[concept] = freq.get(concept.lower(), 0)
+        evidence[concept] = _concept_support(concept, profile.keyphrases)
     pack.evidence = evidence
     return pack
+
+
+def _concept_support(concept: str, keyphrases: list[tuple[str, int]]) -> int:
+    """Corpus support for a concept, matched loosely against the keyphrases.
+
+    Uses substring (either direction) or a shared significant token, so a
+    cleaned/paraphrased concept like "Sustainability Committee" still matches
+    the raw keyphrase "committee". Returns the strongest matching count.
+    """
+    c = concept.lower().strip()
+    if not c:
+        return 0
+    c_tokens = {t for t in c.split() if len(t) >= 4}
+    best = 0
+    for phrase, count in keyphrases:
+        p = phrase.lower()
+        if c == p or c in p or p in c or (c_tokens & set(p.split())):
+            best = max(best, count)
+    return best
 
 
 def compute_confidence(pack: DomainPack, profile: CorpusProfile) -> float:

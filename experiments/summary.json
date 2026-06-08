@@ -5,7 +5,7 @@
     "model": "-",
     "questions": false,
     "domain_knowledge": false,
-    "confidence": 0.71,
+    "confidence": 0.72,
     "n_query_types": 6,
     "query_types": [
       "fact_extraction",
@@ -24,7 +24,7 @@
     "model": "-",
     "questions": true,
     "domain_knowledge": true,
-    "confidence": 0.71,
+    "confidence": 0.72,
     "n_query_types": 5,
     "query_types": [
       "fact_extraction",
@@ -42,7 +42,7 @@
     "model": "glm-4-flash",
     "questions": false,
     "domain_knowledge": false,
-    "confidence": 0.71,
+    "confidence": 0.69,
     "n_query_types": 6,
     "query_types": [
       "esg_report_analysis",
@@ -61,7 +61,7 @@
     "model": "glm-4-flash",
     "questions": true,
     "domain_knowledge": true,
-    "confidence": 0.71,
+    "confidence": 0.78,
     "n_query_types": 6,
     "query_types": [
       "emissions_reduction_target",

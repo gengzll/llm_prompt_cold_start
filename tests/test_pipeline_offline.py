@@ -69,6 +69,16 @@ def test_concept_support_matches_paraphrased_concepts():
     assert _concept_support("unrelated term", keyphrases) == 0
 
 
+def test_confidence_discriminates_clean_vs_noisy():
+    # confidence must reflect scaffold quality, not return a constant.
+    from llm_prompt_cold_start.synthesis import _cleanliness_score, _grounding_score
+
+    assert _cleanliness_score(["climate targets", "emissions reduction", "governance"]) == 1.0
+    assert _cleanliness_score(["usd", "tco", "year", "governance"]) < 1.0
+    # graded grounding: weak support counts less than strong support
+    assert _grounding_score(["x"], {"x": 1}, strong=3) < _grounding_score(["x"], {"x": 3}, strong=3)
+
+
 def test_example_input_files_exist():
     assert (EXAMPLES / "questions.txt").exists()
     assert (EXAMPLES / "domain_knowledge.txt").exists()

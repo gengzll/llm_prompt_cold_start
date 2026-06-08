@@ -314,15 +314,59 @@ def _concept_support(concept: str, keyphrases: list[tuple[str, int]]) -> int:
 
 
 def compute_confidence(pack: DomainPack, profile: CorpusProfile) -> float:
-    """A coarse 0-1 confidence that the generated scaffold is corpus-grounded."""
+    """Coarse 0-1 confidence that the generated scaffold is reliable.
+
+    Four signals (weights sum to 1.0):
+    - grounding   (0.35): how strongly the key concepts are attested in the corpus,
+                          graded by support count rather than mere present/absent.
+                          (Binary coverage was tautological for the offline path,
+                          where concepts ARE the keyphrases, so it was always 1.0.)
+    - cleanliness (0.30): fraction of key concepts that look like real domain terms
+                          rather than tokenizer noise ("usd", "tco", bare numbers).
+                          This is what separates a clean LLM scaffold from a noisy
+                          deterministic one on the same corpus.
+    - corpus_size (0.15): more documents / more text -> more reliable.
+    - sections    (0.20): presence of parsed section structure.
+    """
     if profile.n_documents == 0:
         return 0.0
     concepts = pack.key_concepts or []
-    grounded = sum(1 for c in concepts if pack.evidence.get(c, 0) > 0)
-    coverage = grounded / max(1, len(concepts))
+    # Keyphrase counts are document frequencies (<= n_documents), so "fully
+    # grounded" must be reachable on small corpora. Cap the threshold at n_docs.
+    strong = max(1, min(3, profile.n_documents))
+    grounding = _grounding_score(concepts, pack.evidence, strong=strong)
+    cleanliness = _cleanliness_score(concepts)
     corpus_size = min(1.0, profile.n_documents / 5) * min(1.0, profile.n_chars / 20000)
     section_signal = 1.0 if profile.section_titles else 0.5
-    return round(0.5 * coverage + 0.3 * corpus_size + 0.2 * section_signal, 2)
+    score = 0.35 * grounding + 0.30 * cleanliness + 0.15 * corpus_size + 0.20 * section_signal
+    return round(score, 2)
+
+
+def _grounding_score(concepts: list[str], evidence: dict[str, int], strong: int = 3) -> float:
+    """Mean grounding strength. A concept needs `strong` supporting occurrences to
+    count fully; weakly attested concepts contribute proportionally less."""
+    if not concepts:
+        return 0.0
+    return sum(min(1.0, evidence.get(c, 0) / strong) for c in concepts) / len(concepts)
+
+
+def _cleanliness_score(concepts: list[str]) -> float:
+    """Fraction of concepts that look like genuine domain terms. Penalizes tokenizer
+    noise such as 'usd', 'tco', 'year', or bare numbers/codes."""
+    if not concepts:
+        return 1.0
+    return sum(1 for c in concepts if _looks_like_term(c)) / len(concepts)
+
+
+def _looks_like_term(concept: str) -> bool:
+    c = concept.strip().lower()
+    if not c:
+        return False
+    if " " in c:  # multi-word phrase -> specific, keep
+        return True
+    if any(ch.isdigit() for ch in c):  # bare numbers / codes -> noise
+        return False
+    return len(c) >= 5  # a single word must be reasonably long to count as a term
 
 
 # --------------------------------------------------------------------------- #

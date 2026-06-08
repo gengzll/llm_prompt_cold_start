@@ -41,8 +41,15 @@ See [`summary.md`](summary.md) for the table. Qualitative findings:
   `questions` make the query types track what users actually ask.
 
 **Both online groups keep the `insufficient_evidence` guard** (bug fix #2), and the
-online confidence is now grounded correctly (bug fix #1: reverse-verification uses
-token-overlap matching, so cleaned concepts still match the corpus).
+reverse-verification matches cleaned concepts against the corpus by token overlap
+(bug fix #1).
+
+**Confidence now discriminates between scaffolds.** It used to return the same value
+for every group (it was dominated by corpus-level constants and a binary coverage term
+that was tautological offline). It now combines graded grounding strength, concept
+cleanliness, corpus size, and section structure — so the cleanest scaffold
+(`online_with_inputs`, 0.78) scores above the noisy ones, and `online_no_inputs` (0.69)
+is correctly flagged when its pack falls back to noisy keyphrase concepts.
 
 > Note: online output varies slightly run to run (temperature 0.2), so query-type
 > names may differ if you re-run.

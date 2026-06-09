@@ -1,10 +1,10 @@
 [
   {
-    "group": "offline_no_inputs",
+    "group": "docs",
+    "variant": "offline_no_inputs",
     "mode": "offline",
     "model": "-",
-    "questions": false,
-    "domain_knowledge": false,
+    "inputs": false,
     "confidence": 0.47,
     "n_query_types": 6,
     "query_types": [
@@ -16,14 +16,15 @@
       "insufficient_evidence"
     ],
     "prompt_chars": 4139,
+    "seconds": 0.0,
     "prompt_file": "results/offline_no_inputs.md"
   },
   {
-    "group": "offline_with_inputs",
+    "group": "docs",
+    "variant": "offline_with_inputs",
     "mode": "offline",
     "model": "-",
-    "questions": true,
-    "domain_knowledge": true,
+    "inputs": true,
     "confidence": 0.47,
     "n_query_types": 5,
     "query_types": [
@@ -34,44 +35,47 @@
       "insufficient_evidence"
     ],
     "prompt_chars": 4112,
+    "seconds": 0.0,
     "prompt_file": "results/offline_with_inputs.md"
   },
   {
-    "group": "online_no_inputs",
+    "group": "docs",
+    "variant": "online_no_inputs",
     "mode": "online",
     "model": "glm-4-flash",
-    "questions": false,
-    "domain_knowledge": false,
-    "confidence": 0.85,
+    "inputs": false,
+    "confidence": 0.82,
     "n_query_types": 6,
     "query_types": [
       "sustainability_report_analysis",
       "climate_target_evaluation",
-      "governance_practice_inspection",
-      "whistleblower_protection_assessment",
-      "data_protection_analysis",
+      "governance_structure_inspection",
+      "compliance_policy_analysis",
+      "whistleblower_channel_evaluation",
       "insufficient_evidence"
     ],
-    "prompt_chars": 5507,
+    "prompt_chars": 5595,
+    "seconds": 87.3,
     "prompt_file": "results/online_no_inputs.md"
   },
   {
-    "group": "online_with_inputs",
+    "group": "docs",
+    "variant": "online_with_inputs",
     "mode": "online",
     "model": "glm-4-flash",
-    "questions": true,
-    "domain_knowledge": true,
-    "confidence": 0.88,
+    "inputs": true,
+    "confidence": 0.91,
     "n_query_types": 6,
     "query_types": [
-      "emissions_reduction_target",
-      "scope_emissions_comparison",
-      "committee_structure",
-      "whistleblower_policy",
-      "gift_declaration_policy",
+      "climate_target_query",
+      "emission_comparison_query",
+      "governance_structure_query",
+      "policy_procedure_query",
+      "financial_metric_query",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4283,
+    "prompt_chars": 4268,
+    "seconds": 66.9,
     "prompt_file": "results/online_with_inputs.md"
   }
 ]

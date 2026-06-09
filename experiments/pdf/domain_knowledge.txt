@@ -1,0 +1,6 @@
+Answers must be grounded only in the provided documents.
+This corpus contains annual reports and ESG/sustainability reports from multiple companies.
+Financial figures may be reported in different currencies (e.g. QAR, GBP, HKD).
+Emissions are typically reported as Scope 1, 2, and 3 in tCO2e.
+Prefer exact figures with their unit, currency, and reporting period.
+When a figure is not in the documents, say so explicitly.

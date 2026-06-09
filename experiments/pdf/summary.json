@@ -1,0 +1,80 @@
+[
+  {
+    "group": "pdf",
+    "variant": "offline_no_inputs",
+    "mode": "offline",
+    "model": "-",
+    "inputs": false,
+    "confidence": 0.54,
+    "n_query_types": 6,
+    "query_types": [
+      "fact_extraction",
+      "comparison",
+      "policy_interpretation",
+      "summary",
+      "evidence_lookup",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 3972,
+    "seconds": 14.5,
+    "prompt_file": "results/offline_no_inputs.md"
+  },
+  {
+    "group": "pdf",
+    "variant": "offline_with_inputs",
+    "mode": "offline",
+    "model": "-",
+    "inputs": true,
+    "confidence": 0.54,
+    "n_query_types": 4,
+    "query_types": [
+      "fact_extraction",
+      "comparison",
+      "evidence_lookup",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 3582,
+    "seconds": 14.2,
+    "prompt_file": "results/offline_with_inputs.md"
+  },
+  {
+    "group": "pdf",
+    "variant": "online_no_inputs",
+    "mode": "online",
+    "model": "glm-4-flash",
+    "inputs": false,
+    "confidence": 0.96,
+    "n_query_types": 6,
+    "query_types": [
+      "financial_performance_analysis",
+      "governance_structure_evaluation",
+      "employee_engagement_inspection",
+      "customer_satisfaction_assessment",
+      "community_impact_evaluation",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 5032,
+    "seconds": 79.0,
+    "prompt_file": "results/online_no_inputs.md"
+  },
+  {
+    "group": "pdf",
+    "variant": "online_with_inputs",
+    "mode": "online",
+    "model": "glm-4-flash",
+    "inputs": true,
+    "confidence": 0.93,
+    "n_query_types": 6,
+    "query_types": [
+      "financial_comparison",
+      "board_member_identification",
+      "risk_assessment",
+      "sustainability_initiatives",
+      "employee_relations",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 4975,
+    "seconds": 83.3,
+    "prompt_file": "results/online_with_inputs.md"
+  }
+]

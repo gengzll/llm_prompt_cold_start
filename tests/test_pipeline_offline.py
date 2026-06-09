@@ -38,7 +38,7 @@ def test_vocabulary_renders_aliases():
 
     pack = DomainPack(key_concepts=["emissions"], aliases={"emissions": ["GHG", "carbon"]})
     sp = build_system_prompt(pack, [])
-    assert "Vocabulary: emissions (aka GHG, carbon)" in sp
+    assert "Vocabulary: emissions (GHG, carbon)" in sp
 
 
 def test_evidence_summary_humanizes_metric_keys():

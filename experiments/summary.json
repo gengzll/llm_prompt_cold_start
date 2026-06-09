@@ -52,7 +52,7 @@
       "data_protection_analysis",
       "insufficient_evidence"
     ],
-    "prompt_chars": 5575,
+    "prompt_chars": 5507,
     "prompt_file": "results/online_no_inputs.md"
   },
   {
@@ -71,7 +71,7 @@
       "gift_declaration_policy",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4343,
+    "prompt_chars": 4283,
     "prompt_file": "results/online_with_inputs.md"
   }
 ]

@@ -94,12 +94,12 @@ def _render_policy(policy: AnswerPolicy, risk_policies: list[str]) -> list[str]:
 
 
 def _format_vocabulary(concepts: list[str], aliases: dict[str, list[str]]) -> list[str]:
-    """Render concepts as a glossary, attaching synonyms when known:
-    "emissions (aka GHG, carbon)". Bare term when there are no aliases."""
+    """Render concepts as a glossary, attaching synonyms in parentheses when
+    known: "emissions (GHG, carbon)". Bare term when there are no aliases."""
     out: list[str] = []
     for c in concepts:
         al = (aliases or {}).get(c)
-        out.append(f"{c} (aka {', '.join(al)})" if al else c)
+        out.append(f"{c} ({', '.join(al)})" if al else c)
     return out
 
 

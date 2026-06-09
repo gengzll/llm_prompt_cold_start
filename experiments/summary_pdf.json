@@ -31,7 +31,7 @@
       "customer_experience_outcomes",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4108,
+    "prompt_chars": 4054,
     "seconds": 85.9,
     "prompt_file": "results_pdf/online_no_inputs.md"
   }

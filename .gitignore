@@ -14,3 +14,6 @@ prompt.md
 prompt_demo.md
 result.json
 result_demo.json
+
+# large / third-party PDF corpora (keep the demo outputs, not the binaries)
+examples/sample_pdfs/*.pdf

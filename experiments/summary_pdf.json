@@ -1,0 +1,38 @@
+[
+  {
+    "group": "offline_no_inputs",
+    "mode": "offline",
+    "model": "-",
+    "confidence": 0.56,
+    "n_query_types": 6,
+    "query_types": [
+      "fact_extraction",
+      "comparison",
+      "policy_interpretation",
+      "summary",
+      "evidence_lookup",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 4219,
+    "seconds": 9.1,
+    "prompt_file": "results_pdf/offline_no_inputs.md"
+  },
+  {
+    "group": "online_no_inputs",
+    "mode": "online",
+    "model": "glm-4-flash",
+    "confidence": 0.96,
+    "n_query_types": 6,
+    "query_types": [
+      "financial_performance_overview",
+      "esg_initiatives_details",
+      "governance_structure_analysis",
+      "employee_management_practices",
+      "customer_relations_strategies",
+      "insufficient_evidence"
+    ],
+    "prompt_chars": 4222,
+    "seconds": 72.9,
+    "prompt_file": "results_pdf/online_no_inputs.md"
+  }
+]

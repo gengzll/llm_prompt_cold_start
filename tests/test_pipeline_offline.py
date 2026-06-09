@@ -17,6 +17,15 @@ def _offline_pipeline() -> ColdStartPipeline:
     return ColdStartPipeline(settings)
 
 
+def test_heading_quality_gate_rejects_pdf_noise():
+    from llm_prompt_cold_start.parsing import _looks_like_heading
+
+    for noise in ["2023", "44", "100%", "2", "1.2.3", "$1,234", "—", "12 / 58"]:
+        assert not _looks_like_heading(noise), noise
+    for good in ["Governance", "Board of Directors", "Chairman's message", "1. Introduction", "ESG"]:
+        assert _looks_like_heading(good), good
+
+
 def test_parses_sample_docs():
     docs = load_documents([SAMPLES])
     assert len(docs) >= 2

@@ -78,17 +78,41 @@ def _headings_from_spans(lines: list[tuple[str, float, int]]) -> list[str]:
     body_size = Counter(size for _, size, _ in lines).most_common(1)[0][0]
     headings: list[str] = []
     for text, size, flags in lines:
+        if not _looks_like_heading(text):
+            continue
         words = text.split()
-        if not (1 <= len(words) <= 14) or len(text) > 120:
-            continue
-        if text.endswith((".", ",", ";", ":")):
-            continue
         is_bigger = size >= body_size * 1.15
         is_bold = bool(flags & 16)  # pymupdf bold bit
         is_numbered = bool(re.match(r"^\d+(\.\d+)*\s+\S", text))
         if is_bigger or (is_bold and len(words) <= 10) or (is_numbered and is_bigger):
             headings.append(text)
     return _dedupe(headings)
+
+
+def _looks_like_heading(text: str) -> bool:
+    """Quality gate for candidate headings (PDF/plaintext heuristics).
+
+    Rejects the noise that wrecks section detection on real PDFs: page numbers,
+    bare years ("2023"), percentages ("100%"), figure/table labels, and other
+    digit- or symbol-dominated fragments. A real heading is mostly letters and
+    contains at least one genuine word.
+    """
+    t = text.strip()
+    if not (3 <= len(t) <= 120):
+        return False
+    words = t.split()
+    if not (1 <= len(words) <= 14):
+        return False
+    if t.endswith((".", ",", ";", ":")):
+        return False
+    alpha = sum(c.isalpha() for c in t)
+    digits = sum(c.isdigit() for c in t)
+    if alpha <= digits or alpha / len(t) < 0.5:
+        return False
+    # require at least one real word (>= 3 letters), e.g. not "A1 B2 C3"
+    if not any(sum(c.isalpha() for c in w) >= 3 for w in words):
+        return False
+    return True
 
 
 # --------------------------------------------------------------------------- #
@@ -123,7 +147,7 @@ def _headings_from_plaintext(text: str) -> list[str]:
     out: list[str] = []
     for line in text.splitlines():
         s = line.strip()
-        if not (1 <= len(s.split()) <= 12) or len(s) > 90:
+        if not _looks_like_heading(s) or len(s) > 90:
             continue
         if re.match(r"^\d+(\.\d+)*\s+\S", s) or (s.isupper() and len(s) > 3):
             out.append(s)

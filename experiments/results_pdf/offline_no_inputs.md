@@ -43,18 +43,18 @@ Metrics / quantities in this corpus:
 - dates
 
 Sections likely to contain answers:
-- 2023
 - Employees
 - Customers
-- 100%
-- 44
-- 58
 - Report
-- 2
-- 4
-- 5
-- 12
-- 14
+- Revenue
+- Opportunity
+- Impact
+- Description
+- Overview
+- ESG
+- INNOVATION
+- Ooredoo Group
+- Community Care
 
 Typical reasoning patterns:
 - evidence lookup

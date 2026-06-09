@@ -44,8 +44,12 @@ def run() -> list[dict]:
             summary.append({"group": name, "mode": "online", "status": "skipped (no API key)"})
             continue
 
+        pdfs = sorted(CORPUS.glob("*.pdf"))  # only the PDFs, not a stray README/notes
+        if not pdfs:
+            print(f"[skip] {name}: no PDFs in {CORPUS}")
+            continue
         t0 = time.time()
-        result = ColdStartPipeline(settings).run([CORPUS])  # no questions, no domain knowledge
+        result = ColdStartPipeline(settings).run(pdfs)  # no questions, no domain knowledge
         elapsed = time.time() - t0
 
         (RESULTS / f"{name}.md").write_text(result.system_prompt, encoding="utf-8")

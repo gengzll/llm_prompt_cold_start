@@ -13,8 +13,8 @@
       "evidence_lookup",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4219,
-    "seconds": 9.1,
+    "prompt_chars": 4283,
+    "seconds": 11.7,
     "prompt_file": "results_pdf/offline_no_inputs.md"
   },
   {
@@ -25,14 +25,14 @@
     "n_query_types": 6,
     "query_types": [
       "financial_performance_overview",
-      "esg_initiatives_details",
-      "governance_structure_analysis",
+      "esg_report_details",
       "employee_management_practices",
       "customer_relations_strategies",
+      "company_governance_structure",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4222,
-    "seconds": 72.9,
+    "prompt_chars": 4095,
+    "seconds": 70.3,
     "prompt_file": "results_pdf/online_no_inputs.md"
   }
 ]

@@ -29,14 +29,15 @@ def build_system_prompt(
         out.append("# CONTEXT")
         out.extend(f"- {c}" for c in p.business_context)
 
-    # 2) Domain knowledge ---------------------------------------------------- #
+    # 2) Domain knowledge: compact reference vocabulary, NOT instructions. ---- #
+    # Inline (comma-separated) so the model reads it as terminology to recognize,
+    # not a checklist to execute. Entity types and reasoning patterns are omitted
+    # here on purpose: the former is generic, the latter duplicates the playbook.
     out.append("")
     out.append("# DOMAIN KNOWLEDGE")
-    _bullet_block(out, "Key concepts", p.key_concepts[:18])
-    _bullet_block(out, "Entity types you will encounter", p.entity_types)
-    _bullet_block(out, "Metrics / quantities in this corpus", p.metrics)
-    _bullet_block(out, "Sections likely to contain answers", p.document_sections[:12])
-    _bullet_block(out, "Typical reasoning patterns", p.reasoning_patterns)
+    _inline_kv(out, "Vocabulary", _format_vocabulary(p.key_concepts[:18], p.aliases), sep="; ")
+    _inline_kv(out, "Quantities you'll see", p.metrics)
+    _inline_kv(out, "Where answers live", p.document_sections[:12])
 
     # 3) Answer policy (format & grounding constraints) ---------------------- #
     out.append("")
@@ -92,12 +93,21 @@ def _render_policy(policy: AnswerPolicy, risk_policies: list[str]) -> list[str]:
     return lines
 
 
-def _bullet_block(out: list[str], label: str, items: list[str]) -> None:
-    if not items:
-        return
-    out.append("")
-    out.append(f"{label}:")
-    out.extend(f"- {it}" for it in items)
+def _format_vocabulary(concepts: list[str], aliases: dict[str, list[str]]) -> list[str]:
+    """Render concepts as a glossary, attaching synonyms when known:
+    "emissions (aka GHG, carbon)". Bare term when there are no aliases."""
+    out: list[str] = []
+    for c in concepts:
+        al = (aliases or {}).get(c)
+        out.append(f"{c} (aka {', '.join(al)})" if al else c)
+    return out
+
+
+def _inline_kv(out: list[str], label: str, items: list[str], sep: str = ", ") -> None:
+    cleaned = [it for it in items if it]
+    if cleaned:
+        out.append("")
+        out.append(f"{label}: {sep.join(cleaned)}")
 
 
 def _inline_block(out: list[str], label: str, items: list[str]) -> None:

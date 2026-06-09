@@ -26,9 +26,9 @@ and `summary.json`. The run below used Zhipu **glm-4-flash** for the online grou
 See [`summary.md`](summary.md) for the table. Qualitative findings:
 
 **Mode (offline vs online) — the biggest difference.**
-- `# ROLE` / `Key concepts`: offline lists raw keyphrases (noisy: `usd`, `tco`,
-  `anonymous reporting channel`); online produces clean abstract themes
-  (`ESG performance`, `climate emissions`, `governance structure`).
+- `# DOMAIN KNOWLEDGE`: offline lists denoised keyphrases as bare vocabulary;
+  online produces a glossary with aliases (`governance structure (aka governance
+  model, board structure)`) — useful for mapping user phrasing to corpus terms.
 - `# QUERY-TYPE PLAYBOOK`: offline picks generic catalog templates
   (`fact_extraction`, `comparison`, ...); online specializes types to the corpus
   and the questions, and points retrieval at the real section names

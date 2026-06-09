@@ -17,6 +17,39 @@ def _offline_pipeline() -> ColdStartPipeline:
     return ColdStartPipeline(settings)
 
 
+def test_generic_terms_denoised_from_keyphrases():
+    # Tier 3: single-word generic noise dropped; multi-word phrases survive.
+    from llm_prompt_cold_start.analysis import build_corpus_profile
+    from llm_prompt_cold_start.schemas import Document
+
+    docs = [
+        Document(name="d1", text="The group number grew. Risk management improved this year."),
+        Document(name="d2", text="Risk management is key. The group number rose again this year."),
+    ]
+    phrases = {p for p, _ in build_corpus_profile(docs).keyphrases}
+    assert "group" not in phrases and "number" not in phrases and "year" not in phrases
+    assert any(p == "risk management" for p in phrases)
+
+
+def test_vocabulary_renders_aliases():
+    # Tier 2: aliases attach to concepts as a glossary.
+    from llm_prompt_cold_start.prompt_builder import build_system_prompt
+    from llm_prompt_cold_start.schemas import DomainPack
+
+    pack = DomainPack(key_concepts=["emissions"], aliases={"emissions": ["GHG", "carbon"]})
+    sp = build_system_prompt(pack, [])
+    assert "Vocabulary: emissions (aka GHG, carbon)" in sp
+
+
+def test_evidence_summary_humanizes_metric_keys():
+    # Tier 1: the LLM digest must not expose internal keys like "large_number".
+    from llm_prompt_cold_start.schemas import CorpusProfile
+
+    s = CorpusProfile(n_documents=1, metrics=[("large_number", 5), ("emissions_unit", 3)]).evidence_summary()
+    assert "large_number" not in s
+    assert "large numeric figures" in s
+
+
 def test_heading_quality_gate_rejects_pdf_noise():
     from llm_prompt_cold_start.parsing import _looks_like_heading
 

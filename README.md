@@ -152,7 +152,7 @@ The generated prompt has these sections:
 ```
 # ROLE              role + domain specialization
 # CONTEXT           what the corpus is / business context
-# DOMAIN KNOWLEDGE  key concepts, entity types, metrics, answer-bearing sections, reasoning patterns
+# DOMAIN KNOWLEDGE  compact vocabulary (with aliases), quantities, where answers live
 # ANSWER POLICY     grounding + citation + abstention + format constraints
 # QUERY-TYPE PLAYBOOK   per query type: what to cover, how to answer, retrieval focus, risks
 # TASK              {context} / {question} template to fill at runtime

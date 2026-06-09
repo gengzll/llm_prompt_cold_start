@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from .schemas import AnswerPolicy, CorpusProfile, DomainPack, QueryType
+from .schemas import METRIC_LABELS, AnswerPolicy, CorpusProfile, DomainPack, QueryType
 
 # The DomainPack content fields that are synthesized (LLM or fallback), used for
 # provenance tracking and the synthesis-completeness confidence signal.
@@ -32,14 +32,20 @@ Rules:
 - Do NOT invent organization-specific facts, numeric values, names, or claims.
 - Prefer higher-frequency evidence. If a field has weak evidence, keep it short.
 - Keep every item concise (a short noun phrase or one clause).
+- For key_concepts, fill `aliases` with REAL synonyms or abbreviations that appear
+  in (or are standard for) the corpus, e.g. "emissions": ["GHG", "carbon", "tCO2e"].
+  Only include genuine aliases; do not invent them. Aliases are optional.
+- For metrics, describe the quantity in words (e.g. "monetary amounts",
+  "percentages"); never output internal keys like "large_number".
 - Output STRICTLY valid JSON matching the requested schema. No commentary."""
 
 _DOMAIN_SCHEMA = """{
   "business_context": [string],        // what this corpus is and what users ask about
   "high_level_topics": [string],       // 4-8 broad themes
   "key_concepts": [string],            // concrete domain concepts/terms
+  "aliases": {"concept": [string]},    // optional synonyms/abbreviations per key concept
   "entity_types": [string],            // kinds of entities (org, committee, metric, date...)
-  "metrics": [string],                 // measurable quantities present in the corpus
+  "metrics": [string],                 // measurable quantities, in words (not internal keys)
   "document_sections": [string],       // section types likely to hold answers
   "reasoning_patterns": [string],      // e.g. extraction, comparison, policy interpretation
   "risk_policies": [string]            // answering rules / things to be careful about
@@ -89,7 +95,22 @@ def synthesize_domain_pack(
         value, source = _pick_with_source(data.get(fname), base_values[fname])
         setattr(merged, fname, value)
         merged.provenance[fname] = source
+    merged.aliases = _normalize_aliases(data.get("aliases"))
     return _attach_evidence(merged, profile)
+
+
+def _normalize_aliases(raw) -> dict[str, list[str]]:
+    """Coerce the LLM `aliases` object into {concept: [alias, ...]} with cleaning."""
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, list[str]] = {}
+    for concept, al in raw.items():
+        key = str(concept).strip()
+        # drop self-aliases ("financial ratios" -> "financial ratios") and dups
+        terms = list(dict.fromkeys(t for t in _as_list(al) if t.lower() != key.lower()))
+        if key and terms:
+            out[key] = terms
+    return out
 
 
 def _deterministic_domain_pack(profile: CorpusProfile, user_dk: list[str]) -> DomainPack:
@@ -129,16 +150,7 @@ def _deterministic_domain_pack(profile: CorpusProfile, user_dk: list[str]) -> Do
 
 
 def _humanize_metrics(metric_keys: list[str]) -> list[str]:
-    mapping = {
-        "percentage": "percentages / rates",
-        "currency": "monetary amounts",
-        "year": "years / fiscal periods",
-        "date": "dates",
-        "emissions_unit": "emissions (tCO2e / GHG)",
-        "physical_unit": "physical quantities (energy, mass, area)",
-        "large_number": "large numeric figures",
-    }
-    return [mapping.get(k, k) for k in metric_keys]
+    return [METRIC_LABELS.get(k, k) for k in metric_keys]
 
 
 # --------------------------------------------------------------------------- #

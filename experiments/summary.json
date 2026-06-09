@@ -5,7 +5,7 @@
     "model": "-",
     "questions": false,
     "domain_knowledge": false,
-    "confidence": 0.46,
+    "confidence": 0.47,
     "n_query_types": 6,
     "query_types": [
       "fact_extraction",
@@ -15,7 +15,7 @@
       "evidence_lookup",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4445,
+    "prompt_chars": 4139,
     "prompt_file": "results/offline_no_inputs.md"
   },
   {
@@ -24,7 +24,7 @@
     "model": "-",
     "questions": true,
     "domain_knowledge": true,
-    "confidence": 0.46,
+    "confidence": 0.47,
     "n_query_types": 5,
     "query_types": [
       "fact_extraction",
@@ -33,7 +33,7 @@
       "policy_interpretation",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4418,
+    "prompt_chars": 4112,
     "prompt_file": "results/offline_with_inputs.md"
   },
   {
@@ -42,17 +42,17 @@
     "model": "glm-4-flash",
     "questions": false,
     "domain_knowledge": false,
-    "confidence": 0.83,
+    "confidence": 0.85,
     "n_query_types": 6,
     "query_types": [
-      "esg_report_details",
-      "governance_structure",
-      "climate_emissions_reduction",
-      "compliance_status",
-      "whistleblower_protection_policies",
+      "sustainability_report_analysis",
+      "climate_target_evaluation",
+      "governance_practice_inspection",
+      "whistleblower_protection_assessment",
+      "data_protection_analysis",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4213,
+    "prompt_chars": 5575,
     "prompt_file": "results/online_no_inputs.md"
   },
   {
@@ -61,17 +61,17 @@
     "model": "glm-4-flash",
     "questions": true,
     "domain_knowledge": true,
-    "confidence": 0.89,
+    "confidence": 0.88,
     "n_query_types": 6,
     "query_types": [
       "emissions_reduction_target",
-      "emissions_comparison",
-      "governance_structure",
-      "policy_procedure",
-      "compliance_gift_declaration",
+      "scope_emissions_comparison",
+      "committee_structure",
+      "whistleblower_policy",
+      "gift_declaration_policy",
       "insufficient_evidence"
     ],
-    "prompt_chars": 4388,
+    "prompt_chars": 4343,
     "prompt_file": "results/online_with_inputs.md"
   }
 ]

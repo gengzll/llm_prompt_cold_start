@@ -17,6 +17,20 @@ STOPWORDS = set(
     page table figure section chapter report based using used use including include includes""".split()
 )
 
+# Generic business/document words that are statistically frequent but carry no
+# domain meaning as standalone concepts. We have no background corpus for a true
+# IDF, so this curated denylist plays that role: it suppresses single-word noise
+# like "group"/"number"/"year" while leaving multi-word phrases ("risk
+# management", "ooredoo group") intact.
+GENERIC_TERMS = set(
+    """number numbers group company companies business businesses management value values
+    year years total annual information data overview summary content contents detail details
+    example examples level levels range area areas part parts item items point points result
+    results process processes approach amount amounts period periods note notes term terms
+    percentage percent figure figures key main overall general various related description
+    introduction performance activity activities operation operations""".split()
+)
+
 # regex patterns that flag the presence of "answer-grade" facts in a corpus.
 _PATTERNS: dict[str, re.Pattern] = {
     "percentage": re.compile(r"\b\d{1,3}(?:\.\d+)?\s?%"),
@@ -89,6 +103,8 @@ def _keyphrases(docs: list[Document], top_n: int) -> list[tuple[str, int]]:
     for phrase, doc_freq in df.items():
         if tf[phrase] < 2 and n_docs > 1:
             continue  # drop hapax noise unless single-doc corpus
+        if " " not in phrase and phrase in GENERIC_TERMS:
+            continue  # drop single-word generic noise (keeps multi-word phrases)
         # prefer phrases that are frequent AND spread across documents,
         # with a mild bonus for multi-word (more specific) phrases.
         specificity = 1.0 + 0.3 * (phrase.count(" "))

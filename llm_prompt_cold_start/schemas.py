@@ -3,6 +3,23 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+# Human-readable labels for the internal metric/unit pattern keys. Used at
+# display time (prompt + evidence digest) so the LLM never sees raw keys like
+# "large_number" and echoes them back into the prompt.
+METRIC_LABELS = {
+    "percentage": "percentages / rates",
+    "currency": "monetary amounts",
+    "year": "years / fiscal periods",
+    "date": "dates",
+    "emissions_unit": "emissions (tCO2e / GHG)",
+    "physical_unit": "physical quantities (energy, mass, area)",
+    "large_number": "large numeric figures",
+}
+
+
+def humanize_metric(name: str) -> str:
+    return METRIC_LABELS.get(name, name)
+
 
 # --------------------------------------------------------------------------- #
 # Parsing layer
@@ -46,12 +63,13 @@ class CorpusProfile:
 
         types = ", ".join(f"{k} ({v})" for k, v in self.doc_types.items()) or "(unknown)"
         ents = ", ".join(f"{k} ({v})" for k, v in self.entity_hints.items()) or "(none)"
+        metrics = ", ".join(f"{humanize_metric(v)} ({c})" for v, c in self.metrics[:top]) or "(none)"
         return (
             f"Documents: {self.n_documents}\n"
             f"Document types: {types}\n"
             f"Top keyphrases: {fmt(self.keyphrases, top)}\n"
             f"Section titles: {fmt(self.section_titles, top)}\n"
-            f"Detected metrics/units: {fmt(self.metrics, top)}\n"
+            f"Detected metrics/units: {metrics}\n"
             f"Entity signals: {ents}"
         )
 
@@ -78,6 +96,9 @@ class DomainPack:
     reasoning_patterns: list[str] = field(default_factory=list)
     risk_policies: list[str] = field(default_factory=list)
     answer_policy: AnswerPolicy = field(default_factory=AnswerPolicy)
+    # key concept -> synonyms/abbreviations found in the corpus (LLM-only; helps
+    # map user phrasing to corpus terms). Empty in offline mode.
+    aliases: dict[str, list[str]] = field(default_factory=dict)
     # concept -> number of documents/occurrences supporting it (reverse-verified)
     evidence: dict[str, int] = field(default_factory=dict)
     # field name -> "llm" | "fallback": which fields the LLM actually produced

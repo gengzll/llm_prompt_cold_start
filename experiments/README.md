@@ -87,6 +87,46 @@ confidence = 0.25·grounding + 0.20·cleanliness + 0.20·synthesis
 | `corpus_size` | 0.05 | 0–1 | `min(1, n_docs/5) · min(1, n_chars/20000)` — more documents / more text is more reliable. |
 | `sections` | 0.10 | 0.5–1 | 1.0 if section structure was parsed from the documents, else 0.5. |
 
+### What each signal means
+
+- **grounding** — "are the concepts in this scaffold actually backed by the documents?"
+  For every key concept we count its support in the corpus (`_concept_support`: the strongest
+  keyphrase whose tokens overlap the concept) and score it `min(1, support / strong)`, where
+  `strong = min(3, n_documents)` so the bar is reachable on small corpora. Averaging over all
+  concepts gives the signal. **High** = concepts recur across the documents; **low** = the
+  pack lists terms the corpus barely supports. It is *graded* on purpose — a binary
+  "present?" check would always be 1.0 offline, because there the concepts simply *are* the
+  top keyphrases (a tautology that carried no information).
+
+- **cleanliness** — "do the concepts read like real domain terms or like parser litter?"
+  A concept counts as clean if it is multi-word, or a single word of ≥5 letters with no
+  digits. So `governance structure` and `emissions` pass; `usd`, `tco`, `q3`, `2023` fail.
+  The signal is the clean fraction. This is the main thing that separates a tidy LLM pack
+  (≈1.0) from a noisy deterministic one on the *same* corpus (≈0.8 here, dragged down by
+  fragments like `qr`/`million`).
+
+- **synthesis** — "how much of this pack is genuine LLM work vs. a heuristic fallback?"
+  The pack has 8 content fields; each is tagged `llm` or `fallback` in `pack.provenance`.
+  This signal is the `llm` fraction. Offline is **0** (everything is deterministic). Online is
+  near 1.0 — but if the model silently omits a field (e.g. returns no `key_concepts`), that
+  field falls back to the noisy heuristic and the signal drops, so a half-degraded "online"
+  run is no longer mistaken for a clean one.
+
+- **specificity** — "are the query types tailored to this corpus or just stock templates?"
+  Among the query types (ignoring the always-present `insufficient_evidence` guard), it is the
+  fraction whose name is *not* one of the six generic catalog names (`fact_extraction`,
+  `comparison`, `policy_interpretation`, `summary`, `evidence_lookup`). Offline only ever picks
+  from that catalog, so it scores **0**; online invents names like
+  `emissions_reduction_target` / `board_member_identification`, so it scores ≈1.0.
+
+- **corpus_size** — "is there enough material to be reliable?" Saturates at 5 documents and
+  20,000 characters. The toy `docs` corpus (2 short files) scores ≈0.04; the `pdf` corpus
+  (4 long reports) saturates at 0.80+. Small weight (0.05) so it nudges rather than dominates.
+
+- **sections** — "did we recover any document structure?" 1.0 when section headings were
+  parsed (which also feeds the prompt's *"Where answers live"*), else 0.5. A cheap proxy for
+  whether the documents were parsed into something navigable.
+
 **Why online outranks offline.** `synthesis` and `specificity` are 0 by construction for
 the deterministic path, so **offline is capped at 0.60** even in the best case. `synthesis`
 is an explicit prior (LLM synthesis is treated as more trustworthy here); the other five are
